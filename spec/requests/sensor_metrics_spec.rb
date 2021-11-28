@@ -22,27 +22,40 @@ RSpec.describe "Sensor metrics", :type => :request do
           humidityReadings: [31.2,26.72,15.70,13.31,31.60,20.90,17.90,13.97,25.68,30.39]
         }
       ],
-      'publishedAt': '2021-11-24T15-57-33Z'
+      'publishedAt': '2021-11-27 01:00:00 UTC'
     }
   }
 
   let!(:cable_events) { post cable_readings_events_path, { params: data } }
 
-  it 'should return max temperature from data collected in one hour' do
-    device_id = 32
-    start_time = '2021-11-24T15-50-00Z'
-    end_time = '2021-11-24T16-50-00Z'
+  context 'When published date is within range' do
+    it 'should return max temperature from data collected in one hour' do
+      device_id = 32
+      start_time = '2021-11-27 01:00:00 UTC'
+      end_time = '2021-11-27 02:00:00 UTC'
 
-    get "/sensor_metrics/#{device_id}/peak_temp?start_time=#{start_time}&end_time=#{end_time}"
-    expect(JSON.parse(response.body).dig('maxTemperature')).to eq('98.81')
+      get "/sensor_metrics/#{device_id}/peak_temp?start_time=#{start_time}&end_time=#{end_time}"
+      expect(JSON.parse(response.body).dig('maxTemperature')).to eq('98.81')
+    end
+
+    it 'should return max humidity from data collected in one hour' do
+      device_id = 32
+      start_time = '2021-11-27 01:00:00 UTC'
+      end_time = '2021-11-27 02:00:00 UTC'
+
+      get "/sensor_metrics/#{device_id}/peak_humid?start_time=#{start_time}&end_time=#{end_time}"
+      expect(JSON.parse(response.body).dig('maxHumidity')).to eq('97.87')
+    end
   end
 
-  it 'should return max humidity from data collected in one hour' do
-    device_id = 32
-    start_time = '2021-11-24T15-50-00Z'
-    end_time = '2021-11-24T16-50-00Z'
+  context 'When published date is out of range from the record present in database' do
+    it 'should not return a value; should return `Record not found` message' do
+      device_id = 32
+      start_time = '2021-11-27 02:00:00 UTC'
+      end_time = '2021-11-27 03:00:00 UTC'
 
-    get "/sensor_metrics/#{device_id}/peak_humid?start_time=#{start_time}&end_time=#{end_time}"
-    expect(JSON.parse(response.body).dig('maxHumidity')).to eq('97.87')
+      get "/sensor_metrics/#{device_id}/peak_temp?start_time=#{start_time}&end_time=#{end_time}"
+      expect(JSON.parse(response.body).dig('message')).to eq('Record not found')
+    end
   end
 end
