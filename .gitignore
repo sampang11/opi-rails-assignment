@@ -1,0 +1,19 @@
+# System Files
+.DS_Store
+
+# Dependency Folders
+**/vendor/bundle/*
+
+# Compiled Assets
+**/build/*
+
+# Logs/Histories/Temporary Files
+**/*.log*
+**/log/*
+**/tmp/*
+.rspec_status
+.byebug_history
+.eslintcache
+
+# Exceptions
+!**/.keep

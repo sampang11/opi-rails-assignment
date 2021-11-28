@@ -1,0 +1,3 @@
+---
+:queues:
+  - sensor_jobs
